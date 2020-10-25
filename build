@@ -162,7 +162,6 @@ so looping over all of them would waste time.
                 'bash',
                 'bc',
                 'binutils',
-                'build-essential',
                 'bzip2',
                 'cpio',
                 'g++',
@@ -195,7 +194,7 @@ so looping over all of them would waste time.
                 'doxygen',
                 'git',
                 'libboost-all-dev',
-                'libelf-dev',
+                'elfutils-libelf-devel',
                 'libgoogle-perftools-dev',
                 'libhdf5-serial-dev',
                 'libpng-dev',
@@ -324,7 +323,7 @@ so looping over all of them would waste time.
                     'flex',
                     # Without this started failing in kernel 4.15 with:
                     # Makefile:932: *** "Cannot generate ORC metadata for CONFIG_UNWINDER_ORC=y, please install libelf-dev, libelf-devel or elfutils-libelf-devel".  Stop.
-                    'libelf-dev',
+                    'elfutils-libelf-devel',
                 },
             ),
             'modules': _Component(
@@ -352,7 +351,7 @@ so looping over all of them would waste time.
             'qemu': _Component(
                 self._build_file('build-qemu'),
                 apt_build_deps={'qemu'},
-                apt_get_pkgs={'libsdl2-dev'},
+                apt_get_pkgs={'SDL2'},
                 submodules={'qemu'},
             ),
             'qemu-baremetal': _Component(dependencies=[
@@ -420,7 +419,7 @@ so looping over all of them would waste time.
         self.component_to_name_map = {self.name_to_component_map[key]:key for key in self.name_to_component_map}
 
         self.add_argument(
-            '--apt',
+            '--yum',
             default=True,
             help='''\
 Don't run any apt-get commands. To make it easier to use with other archs:
@@ -506,13 +505,9 @@ Which components to build. Default: qemu-buildroot
             processor = self.env['host_arch']
             if processor != 'arm':
                 apt_get_pkgs.update({
-                    'gcc-arm-linux-gnueabihf',
-                    'g++-arm-linux-gnueabihf',
                 })
             if processor != 'aarch64':
                 apt_get_pkgs.update({
-                    'gcc-aarch64-linux-gnu',
-                    'g++-aarch64-linux-gnu',
                 })
             apt_build_deps = set()
             submodules = set()
@@ -544,7 +539,7 @@ Which components to build. Default: qemu-buildroot
                     # https://askubuntu.com/questions/909277/avoiding-user-interaction-with-tzdata-when-installing-certbot-in-a-docker-contai
                     os.environ['DEBIAN_FRONTEND'] = 'noninteractive'
                     # https://askubuntu.com/questions/496549/error-you-must-put-some-source-uris-in-your-sources-list
-                    sources_path = os.path.join('/etc', 'apt', 'sources.list')
+                    sources_path = os.path.join('/etc', 'yum', 'sources.list')
                     with open(sources_path, 'r') as f:
                         sources_txt = f.read()
                     sources_txt = re.sub('^# deb-src ', 'deb-src ', sources_txt, flags=re.MULTILINE)
@@ -556,19 +551,19 @@ Which components to build. Default: qemu-buildroot
                     y = ['-y']
                 else:
                     y = []
-                if self.env['apt']:
+                if self.env['yum']:
                     self.sh.run_cmd(
-                        sudo + ['apt-get', 'update', LF]
+                        sudo + ['yum', 'update', LF]
                     )
                     if apt_get_pkgs:
                         self.sh.run_cmd(
-                            sudo + ['apt-get', 'install'] + y + [LF] +
+                            sudo + ['yum', 'install'] + y + [LF] +
                             self.sh.add_newlines(sorted(apt_get_pkgs))
                         )
                     if apt_build_deps:
                         self.sh.run_cmd(
                             sudo +
-                            ['apt-get', 'build-dep'] + y + [LF] +
+                            ['yum', 'build-dep'] + y + [LF] +
                             self.sh.add_newlines(sorted(apt_build_deps))
                         )
             if python3_pkgs:
