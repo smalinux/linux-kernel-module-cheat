@@ -92,8 +92,11 @@ Reserve 12Gb of disk and run:
 git clone https://github.com/cirosantilli/linux-kernel-module-cheat
 cd linux-kernel-module-cheat
 ./build --download-dependencies qemu-buildroot
+
 vim /home/smalinux/linux-kernel-module-cheat/out/buildroot/build/default/x86_64/build/host-dtc-1.5.0/dtc-parser.tab.c
+
 # and comment  //YYLTYPE yylloc
+./build --download-dependencies qemu-buildroot
 ./run
 ....
 
